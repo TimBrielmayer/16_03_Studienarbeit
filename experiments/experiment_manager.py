@@ -4,7 +4,7 @@ import os
 from typing import Dict, Any, List
 
 from models.model_loader import ModelLoader
-from benchmark.run_benchmark import BenchmarkRunner
+from benchmarks.run_benchmark import BenchmarkRunner
 
 
 class ExperimentManager:

@@ -1,0 +1,24 @@
+# Core
+transformers>=4.36
+accelerate>=0.25
+bitsandbytes>=0.41
+# Torch ist in Colab bereits vorinstalliert (CUDA). Lokal ggf. passend installieren.
+# torch>=2.1
+
+# Evaluation
+lm-eval>=0.4
+lm-dataformat
+pyyaml
+
+# Data
+datasets>=2.16
+evaluate>=0.4
+pandas>=2.0
+
+# Utils / plots
+matplotlib>=3.7
+seaborn>=0.13
+
+# Tokenizers / safetensors
+sentencepiece
+safetensors
