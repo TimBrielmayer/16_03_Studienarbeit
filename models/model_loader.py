@@ -32,6 +32,7 @@ class ModelLoader:
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
+            low_cpu_mem_usage=True,
             **quant_kwargs,
         )
 
