@@ -55,29 +55,43 @@ def get_layer_count(model) -> int:
 
 
 @contextmanager
+class _BypassLayer(torch.nn.Module):
+    """
+    Laesst den Layer bestehen, gibt aber die Eingabe als Output zurueck.
+    Das Original-Layer wird weiterhin aufgerufen, damit Cache/Shapes stabil bleiben.
+    """
+
+    def __init__(self, layer: torch.nn.Module):
+        super().__init__()
+        self.layer = layer
+
+    def forward(self, hidden_states, *args, **kwargs):
+        outputs = self.layer(hidden_states, *args, **kwargs)
+
+        # Erwartet wird in Decoder-Layern typischerweise ein Tuple
+        if isinstance(outputs, tuple):
+            return (hidden_states,) + outputs[1:]
+
+        # Falls ein ModelOutput verwendet wird, versuche hidden_states zu ersetzen
+        if hasattr(outputs, "hidden_states"):
+            outputs.hidden_states = hidden_states
+        return outputs
+
+
 def temporarily_remove_layer(model, layer_index: int):
     """
-    Entfernt temporär einen Layer und stellt danach den Originalzustand wieder her.
+    Setzt den Layer an Position layer_index temporär auf eine Bypass-Variante,
+    um Stabilitaet (Generation/Cache) zu wahren.
     """
-    path, layers = find_layers_path(model)
-    orig_layers = layers
-    orig_count = len(layers)
-    orig_cfg = None
-    if hasattr(model, "config") and hasattr(model.config, "num_hidden_layers"):
-        orig_cfg = model.config.num_hidden_layers
+    _, layers = find_layers_path(model)
 
     if layer_index < 0 or layer_index >= len(layers):
         raise IndexError(f"Layer-Index {layer_index} ausserhalb [0, {len(layers)-1}]")
 
-    new_layers = torch.nn.ModuleList([layer for i, layer in enumerate(layers) if i != layer_index])
-
-    _set_by_path(model, path, new_layers)
-    if orig_cfg is not None:
-        model.config.num_hidden_layers = len(new_layers)
+    orig_layer = layers[layer_index]
+    layers[layer_index] = _BypassLayer(orig_layer)
 
     try:
         yield
     finally:
-        _set_by_path(model, path, orig_layers)
-        if orig_cfg is not None:
-            model.config.num_hidden_layers = orig_cfg
+        layers[layer_index] = orig_layer
