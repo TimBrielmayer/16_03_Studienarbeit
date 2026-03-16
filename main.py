@@ -83,7 +83,7 @@ def save_latest_copy(results: dict, model_name: str) -> str:
     safe_model = model_name.replace("/", "_")
     out_path = os.path.join("experiments", f"latest_results_{safe_model}_{ts}.json")
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
+        json.dump(results, f, indent=2, default=str)
     print(f"💾 Zusätzliche Kopie gespeichert unter: {out_path}")
     return out_path
 

@@ -54,7 +54,6 @@ def get_layer_count(model) -> int:
     return len(layers)
 
 
-@contextmanager
 class _BypassLayer(torch.nn.Module):
     """
     Laesst den Layer bestehen, gibt aber die Eingabe als Output zurueck.
@@ -78,6 +77,7 @@ class _BypassLayer(torch.nn.Module):
         return outputs
 
 
+@contextmanager
 def temporarily_remove_layer(model, layer_index: int):
     """
     Setzt den Layer an Position layer_index temporär auf eine Bypass-Variante,
